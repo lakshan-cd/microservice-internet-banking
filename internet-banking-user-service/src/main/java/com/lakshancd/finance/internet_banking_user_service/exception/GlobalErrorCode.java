@@ -1,0 +1,9 @@
+package com.lakshancd.finance.internet_banking_user_service.exception;
+
+public class GlobalErrorCode {
+    public static final String ERROR_ENTITY_NOT_FOUND = "BANKING-CORE-SERVICE-1000";
+    public static final String INSUFFICIENT_FUNDS = "BANKING-CORE-SERVICE-1001";
+    public static final String ERROR_EMAIL_REGISTERED = "USER-SERVICE-1002";
+    public static final String ERROR_INVALID_EMAIL = "USER-SERVICE-1003";
+    public static final String ERROR_USER_NOT_FOUND_UNDER_NIC = "USER-SERVICE-1004";
+}
