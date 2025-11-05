@@ -2,10 +2,12 @@ package com.lakshancd.finance.internet_banking_user_service.service;
 
 import com.lakshancd.finance.internet_banking_user_service.model.dto.User;
 import com.lakshancd.finance.internet_banking_user_service.model.dto.UserUpdateRequest;
+import com.lakshancd.finance.internet_banking_user_service.model.dto.user.UserResponse;
 import com.lakshancd.finance.internet_banking_user_service.model.entity.UserEntity;
 import com.lakshancd.finance.internet_banking_user_service.model.enums.Status;
 import com.lakshancd.finance.internet_banking_user_service.model.mapper.UserMapper;
 import com.lakshancd.finance.internet_banking_user_service.model.repository.UserRepository;
+import com.lakshancd.finance.internet_banking_user_service.service.feignclinet.BankingCoreRestClient;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +28,7 @@ import java.util.UUID;
 public class UserService {
     private final KeycloakUserService keycloakUserService;
     private final UserRepository userRepository;
+    private final BankingCoreRestClient bankingCoreRestClient;
 
     private final UserMapper userMapper = new UserMapper(); //manual instantiation dependency injection
 
@@ -34,6 +37,14 @@ public class UserService {
                 .readUserByEmail(user.getEmail());
         if (!userRepresentations.isEmpty()) {
             throw new RuntimeException("User already exists with email: " + user.getEmail());
+        }
+
+        //newly added part for communication with core banking service
+        UserResponse userResponse =bankingCoreRestClient.readUser(user.getIdentification());
+        if (userResponse.getId() !=null){
+            if (!userResponse.getEmail().equals(user.getEmail())){
+                throw new RuntimeException("Incorrect email. Please check and retry.");
+            }
         }
 
         UserRepresentation userRepresentation = new UserRepresentation();
