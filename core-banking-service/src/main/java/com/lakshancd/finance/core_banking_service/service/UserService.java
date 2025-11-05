@@ -1,5 +1,6 @@
 package com.lakshancd.finance.core_banking_service.service;
 
+import com.lakshancd.finance.core_banking_service.exception.custom.EntityNotFoundException;
 import com.lakshancd.finance.core_banking_service.model.dto.User;
 import com.lakshancd.finance.core_banking_service.model.entity.UserEntity;
 import com.lakshancd.finance.core_banking_service.model.mapper.UserMapper;
@@ -17,7 +18,8 @@ public class UserService {
     private final UserRepository userRepository;
 
     public User readUser(String identification){
-        UserEntity userEntity = userRepository.findByIdentificationNumber(identification).get();
+        UserEntity userEntity = userRepository.findByIdentificationNumber(identification)
+                .orElseThrow(EntityNotFoundException::new);
         return userMapper.convertToDto(userEntity);
     }
 
