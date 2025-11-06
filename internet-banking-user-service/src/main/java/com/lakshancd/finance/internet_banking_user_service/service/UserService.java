@@ -1,5 +1,9 @@
 package com.lakshancd.finance.internet_banking_user_service.service;
 
+import com.lakshancd.finance.internet_banking_user_service.exception.GlobalErrorCode;
+import com.lakshancd.finance.internet_banking_user_service.exception.custom.InvalidBankingUserException;
+import com.lakshancd.finance.internet_banking_user_service.exception.custom.InvalidEmailException;
+import com.lakshancd.finance.internet_banking_user_service.exception.custom.UserAlreadyRegisteredException;
 import com.lakshancd.finance.internet_banking_user_service.model.dto.User;
 import com.lakshancd.finance.internet_banking_user_service.model.dto.UserUpdateRequest;
 import com.lakshancd.finance.internet_banking_user_service.model.dto.user.UserResponse;
@@ -17,7 +21,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -36,14 +39,14 @@ public class UserService {
         List<UserRepresentation> userRepresentations = keycloakUserService
                 .readUserByEmail(user.getEmail());
         if (!userRepresentations.isEmpty()) {
-            throw new RuntimeException("User already exists with email: " + user.getEmail());
+            throw new UserAlreadyRegisteredException("This email already registered as a user. Please check and retry." , GlobalErrorCode.ERROR_EMAIL_REGISTERED);
         }
 
         //newly added part for communication with core banking service
         UserResponse userResponse =bankingCoreRestClient.readUser(user.getIdentification());
         if (userResponse.getId() !=null){
             if (!userResponse.getEmail().equals(user.getEmail())){
-                throw new RuntimeException("Incorrect email. Please check and retry.");
+                throw new InvalidEmailException("Incorrect email. Please check and retry.", GlobalErrorCode.ERROR_INVALID_EMAIL);
             }
         }
 
@@ -74,7 +77,7 @@ public class UserService {
             return userMapper.convertToDto(save);
         }
 
-        throw new RuntimeException("We couldn't find user under given identification. Please check and retry");
+        throw new InvalidBankingUserException("We couldn't find user under given identification. Please check and retry", GlobalErrorCode.ERROR_USER_NOT_FOUND_UNDER_NIC);
     }
 
     public List<User> readUsers (Pageable pageable){
